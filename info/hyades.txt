@@ -1,0 +1,68 @@
+This is to serve as some notes on getting the Slugcode to run on Hyades with the intel compiler:
+
+#####################################
+I have a clone of the SEO git repo for the group that utilizes the sparse checkout feature of GIT to only download the /SlugCode subdirectory of the entire repo.
+  -Note that this still maintains the entire commit history for the repo (~2GB) but avoids downloading unecessary f   iles
+
+You can do this by:
+
+mkdir sparse_repo
+cd sparse_repo
+git init
+git config core.sparseCheckout true
+echo 'SlugCode/'
+git remote add origin acreyes@riverdance.soe.ucsc.edu:/soe/dongwook/GitRepos/research
+git checkout --depth 1
+
+####################################
+
+To get the code to compile I've added a hyades specific makefile
+"makefile.hyades" that should work to compile the code.
+
+I've gotten it to work using these modules:
+
+  1) intel_mpi/4.1.3             3) lapack/s_gcc_netlib_3.5.0
+  2) intel_compilers/14.0.1      4) hdf5/s_intel_1.8.12
+
+The most important bit is to have the -coarray flag when compiling to tell the
+compiler to recognize the CAF syntax.
+
+******************
+I have not tested this configuration distributed memory runs yet (#Nodes > 1),
+but it is supposed to work by setting the flags:
+    -coarray=distributed -coarray-config-file=CAFconfig.txt
+
+Where CAFconfig.txt is a configuration file that makes the mpiexec aware of
+node and memory information of the system. For example it might contain:
+
+        -genvall -genv I_MPI_FABRICS=shm:ofa -n 8 
+	./slugEuler1d
+
+here -n would specify the number of procs to use and can be updated after
+compiling.
+
+So far I have not been able to get this to work on Hyades, where I always get
+an error file/directory not found, presumably referring to tthe CAFconfig.txt
+file.
+*******************
+
+Jobs can be submitted using the following example PBS script. This assumes the
+executtable is in /slugEuler1d and the job is being submitted from the
+subdirectory /data/my_job.pbs:
+
+#!/bin/bash
+
+#PBS -N slug_code_job
+#PBS -l nodes=1:ppn=16
+#PBS -l walltime=24:00:00
+
+module load hdf5
+module load lapack
+cd $PBS_O_WORKDIR
+export FOR_COARRAY_NUM_IMAGES=16
+../slugEuler1d
+
+
+The variable FOR_COARRAY_NUM_IMAGES specifies the number of procs to use in
+the simulation and should match bl_iProcs*bl_jProcs*bl_kProcs in the /data/slug.init 
+

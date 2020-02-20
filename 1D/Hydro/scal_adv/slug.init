@@ -1,0 +1,57 @@
+# Please put your runtime parameters: 
+# name, and a space, followed by values 
+
+# sim variables
+sim_name 'gpr2_nonzero'
+sim_fixDt .false.
+sim_cfl 0.4
+sim_tmax 8.
+sim_nstep 1
+sim_nlim  .false.
+sim_outputIntervalTime 0.1
+sim_riemann 'scal'
+sim_limiter 'mc'
+sim_charLimiting .false.
+sim_WENO '5'               #'5' or 'Z'
+sim_mval 2		   #ROC power for betas'
+sim_WENeps 1.e-36
+sim_quad 'exact'
+sim_sigma 0.
+sim_sigdel 12.
+sim_intFlux .true.
+
+# grid variables
+gr_ngc 6
+gr_xbeg -1.
+gr_xend 1.
+
+# problem specific physical IC
+sim_icType 'scal_adv'
+sim_shockLoc 0.5
+sim_densL 1.0
+sim_velxL 0.0 #-2. #0.
+sim_presL 1.0 #0.4 #1.
+sim_densR 0.125 #0.125
+sim_velxR 0.0 #0.
+sim_presR 0.1 #0.1
+sim_gamma 1.66666666667
+sim_smallPres 1.e-12
+
+# BC type
+sim_bcType 'periodic'
+
+# IO frequency
+sim_ioTfreq 10. #real
+sim_ioNfreq -1    #positive integer; zero or negative if not used
+
+sim_dt 0.0125
+sim_order 10
+sim_RK .true.
+sim_Torder 3
+gp_radius 2
+gp_eldel 12.
+
+
+gp_ell 0.
+gp_sigdel 3.
+gr_nx 200

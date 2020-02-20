@@ -1,0 +1,73 @@
+# Please put your runtime parameters: 
+# name, and a space, followed by values 
+
+# sim variables
+sim_name 'windtunnel2D'
+sim_fixDt .false.
+sim_cfl 0.3
+sim_tmax 4.0
+sim_nstep 1
+sim_nlim  .false.
+sim_outputIntervalTime 0.1
+sim_riemann 'hllc'
+sim_limiter 'mc'
+sim_charLimiting .true.
+sim_WENO '5'               #'5' or 'Z'
+sim_mval 2		   #ROC power for betas'
+sim_WENeps 1.e-36
+sim_order 5
+sim_RK .true.
+sim_Torder 3
+sim_dt 0.001
+sim_reconMultiD .false.
+sim_intFlux .true.
+sim_GPFlux .false.
+sim_DongwookFlux .false.
+
+gp_kernel 'SE'
+gp_quad 'exact'
+gp_radius 2
+gpM_radius 2.0
+gp_ell 1.
+gp_eldel 0.
+
+# grid variables
+gr_ngc 5
+gr_nx 60
+gr_ny 10
+gr_nz 20
+gr_xbeg 0.
+gr_xend 3.
+gr_ybeg 0.
+gr_yend 0.5
+gr_zbeg 0.
+gr_zend 1.0
+gr_radius 1.5
+
+# problem specific physical IC
+sim_icType 'windtunnel2D'
+sim_shockLoc 0.5
+sim_densL 1.0
+sim_velxL 0.0 #-2. #0.
+sim_presL 1.0 #0.4 #1.
+sim_densR 0.125 #0.125
+sim_velxR 0.0 #0.
+sim_presR 0.1 #0.1
+sim_gamma 1.4
+sim_smallPres 1.e-12
+
+# BC type
+sim_bcTypeX 'inflow'
+sim_bcTypeY 'reflect'
+sim_bcTypeZ 'reflect'
+
+# block sizes
+bl_iProcs 2
+bl_jProcs 2
+bl_kProcs 1
+
+# IO frequency
+sim_hdf5 .true.
+sim_ioTfreq .5 #real
+sim_ioNfreq -1    #positive integer; zero or negative if not used
+

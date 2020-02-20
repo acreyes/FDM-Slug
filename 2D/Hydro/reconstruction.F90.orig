@@ -1,0 +1,118 @@
+module reconstruction
+  
+#include "definition.h"
+
+  use grid_data, only: gr_vL, gr_vR, gr_imax
+  use sim_data, only: sim_smallPres
+  use sim_interfaces
+
+contains
+
+  subroutine reconMD_ij(ibeg, iend, jbeg, jend, Npts, recon_stencil, V, recon)
+    integer, intent(IN) :: ibeg, iend, jbeg, jend, Npts
+
+    real, dimension(NDIM, Npts), intent(IN) :: recon_stencil
+    real, dimension(NUMB_VAR, gr_imax(XDIM), gr_imax(YDIM)), intent(IN) :: V
+    procedure (reconMD), pointer, intent(IN) :: recon
+
+    real, dimension(Npts, NUMB_VAR) :: data_stencil
+    
+    integer :: i, j, s, var, si, sj
+
+    do i = ibeg, iend
+       do j = jbeg, jend
+          !build the data stencil
+          do s = 1, Npts
+             si = i+INT(recon_stencil(XDIM,s))
+             sj = j+INT(recon_stencil(YDIM,s))
+             data_stencil(s,:) = V(:,si,sj)
+          end do
+          call recon(dt, Npts, data_stencil, gr_vL(:,i,j,:), gr_vR(:,i,j,:))
+       end do
+    end do
+
+  end subroutine reconMD_ij
+
+  subroutine recon1D_ij(ibeg, iend, sm, sp, dir, V, recon)
+    !reconstruct in direction "dir" using 1D stencil ranging from i+sm to i+sp
+    !do so over indices ibeg:iend and jbeg:jend
+    integer, intent(IN) ::  sm, sp, dir
+    integer, dimension(NDIM), intent(IN) :: ibeg, iend 
+    
+    real, dimension(NUMB_VAR, gr_imax(XDIM), gr_imax(YDIM)), intent(IN) :: V
+    procedure (recon1D), pointer, intent(IN) :: recon
+
+    integer :: i, j, si, sj, var, Nx, i0, j0, si_max, sj_max, scntr
+
+    real, dimension(sp-sm+1,NUMB_VAR) :: stencil
+
+    Nx = sp-sm+1
+
+!!$    do j = ibeg(YDIM), iend(YDIM)
+!!$       StencilDo: do i = ibeg(XDIM), iend(XDIM) 
+    do i = ibeg(XDIM), iend(XDIM)
+       StencilDo: do j = ibeg(YDIM), iend(YDIM)
+
+          !make stencil
+          select case(dir)
+          case(XDIM)
+             i0 = i + sm
+             si_max = i + sp
+             j0 = j
+             sj_max = j
+          case(YDIM)
+             i0 = i
+             si_max = i
+             j0 = j + sm
+             sj_max = j + sp
+          case default
+             i0 = i + sm
+             si_max = i + sp
+             j0 = j
+             sj_max = j
+          end select
+#ifdef BDRY_VAR
+!!$          !check if there is a physica boundary on the stencil
+          do si = i0,si_max
+             do sj=j0,sj_max
+                if (V(BDRY_VAR,si,sj) == 1.0) then
+                !if (.true.) then
+                   !found a physical boundary: do first order
+                   gr_vL(:,i,j,dir) = V(:,i,j)
+                   gr_vR(:,i,j,dir) = V(:,i,j)
+                   cycle StencilDo
+                end if
+             end do
+          end do
+#endif          
+
+          do var = 1, NUMB_VAR
+             scntr = 0
+             do si = i0, si_max
+                do sj = j0, sj_max                  
+                   scntr = scntr + 1
+                   stencil(scntr,var) = V(var, si, sj)
+              
+                end do !sj
+             end do    !si
+          end do       !var
+
+          call recon(dt, Nx, stencil, gr_vL(:,i,j,dir), gr_vR(:,i,j,dir), dir)
+<<<<<<< HEAD
+          !enforce positive pressure
+          gr_vL(DENS_VAR,i,j,dir) = max(gr_vL(DENS_VAR,i,j,dir),sim_smallPres)
+          gr_vR(DENS_VAR,i,j,dir) = max(gr_vR(DENS_VAR,i,j,dir),sim_smallPres)
+          gr_vL(PRES_VAR,i,j,dir) = max(gr_vL(PRES_VAR,i,j,dir),sim_smallPres)
+          gr_vR(PRES_VAR,i,j,dir) = max(gr_vR(PRES_VAR,i,j,dir),sim_smallPres)
+||||||| merged common ancestors
+=======
+          !enforce positive pressure
+          gr_vL(PRES_VAR,i,j,dir) = max(gr_vL(PRES_VAR,i,j,dir),sim_smallPres)
+          gr_vR(PRES_VAR,i,j,dir) = max(gr_vR(PRES_VAR,i,j,dir),sim_smallPres)
+>>>>>>> added neg pressure check to reconstruction1D
+       end do StencilDo
+    end do
+    
+  end subroutine recon1D_ij
+
+end module reconstruction
