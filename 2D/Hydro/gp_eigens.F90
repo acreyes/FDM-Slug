@@ -44,12 +44,12 @@ subroutine gp_eigens()
 !!$        gp_Pvecs(j,i) = dot_product(C(:,i), gp_Zvecs(j,:,1))/sqrt(W(i))
 !!$     end do
 !!$  end do
-print *, N
-  do i = 1, N
-     gp_Pvecs(:,i) = C(:,i)/sqrt(W(i))
-     print *, gp_Pvecs(:,i)
-  end do
-stop
+! print *, N
+!   do i = 1, N
+!      gp_Pvecs(:,i) = C(:,i)/sqrt(W(i))
+!      print *, gp_Pvecs(:,i)
+!   end do
+! stop
 contains
   function SE(x, y) result(f)
     implicit none
